@@ -1,0 +1,40 @@
+{
+  "name": "ug-micro-batching",
+  "version": "1.0.0",
+  "source": "src/index.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/module/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "git@github.com:dyliew/ug-micro-batching.git",
+  "author": "Yang Liew",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "test:ci": "jest --coverage --verbose",
+    "format": "prettier --write . && eslint --fix .",
+    "lint": "prettier --check . && eslint .",
+    "check": "tsc --noEmit",
+    "prebuild": "rm -rf dist && mkdir dist",
+    "build": "parcel build",
+    "ci": "yarn check && yarn lint && yarn test:ci && yarn build"
+  },
+  "engines": {
+    "parcel": "2.x",
+    "node": "18"
+  },
+  "devDependencies": {
+    "@parcel/packager-ts": "2.10.3",
+    "@parcel/transformer-typescript-types": "2.10.3",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.4",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
+    "eslint": "^8.55.0",
+    "jest": "^29.7.0",
+    "parcel": "^2.10.3",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  }
+}
