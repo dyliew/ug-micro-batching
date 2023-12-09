@@ -2,7 +2,7 @@ import { Static } from 'runtypes';
 
 import { CreateJobOptionValidator, CreateBatchProessorOptionValidator } from './validators';
 
-export type CreateBatchProessorOption = Static<typeof CreateBatchProessorOptionValidator>;
+export type CreateBatchRunnerOption = Static<typeof CreateBatchProessorOptionValidator>;
 
 export type JobStatus = 'idle' | 'running' | 'success' | 'failure';
 
@@ -24,4 +24,4 @@ export type JobResult<T> = SuccessJobResult<T> | OtherJobResult | FailureJobResu
 
 export type CreateJobOption = Static<typeof CreateJobOptionValidator>;
 
-export type BatchingProcessorStatus = 'idle' | 'running' | 'stopped';
+export type BatchRunnerStatus = 'idle' | 'running' | 'stopped';

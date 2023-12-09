@@ -2,18 +2,18 @@ import { PromisePool } from '@supercharge/promise-pool';
 import { Ok, Err, Result } from 'rustic';
 
 import { Job } from './Job';
-import { BatchingProcessorStatus, CreateBatchProessorOption, FailureJobResult, SuccessJobResult } from './types';
+import { BatchRunnerStatus, CreateBatchRunnerOption, FailureJobResult, SuccessJobResult } from './types';
 import { CreateBatchProessorOptionValidator } from './validators';
 
-export class BatchingProcessor {
+export class BatchRunner {
   private batchSize: number;
   private concurrency: number;
-  private status: BatchingProcessorStatus = 'idle';
+  private status: BatchRunnerStatus = 'idle';
   private jobQueue: Job<unknown>[] = [];
   private successJobs: SuccessJobResult<unknown>[] = [];
   private failedJobs: FailureJobResult[] = [];
 
-  constructor(option?: CreateBatchProessorOption) {
+  constructor(option?: CreateBatchRunnerOption) {
     this.batchSize = option?.batchSize ?? 1;
     this.concurrency = option?.concurrency ?? 1;
   }
@@ -145,12 +145,12 @@ export class BatchingProcessor {
   }
 }
 
-export const createBatchingProcessor = (option?: CreateBatchProessorOption): Result<BatchingProcessor, Error> => {
+export const createBatchRunner = (option?: CreateBatchRunnerOption): Result<BatchRunner, Error> => {
   try {
     if (option) {
       CreateBatchProessorOptionValidator.check(option);
     }
-    return Ok(new BatchingProcessor(option));
+    return Ok(new BatchRunner(option));
   } catch (error) {
     return Err(error as Error);
   }

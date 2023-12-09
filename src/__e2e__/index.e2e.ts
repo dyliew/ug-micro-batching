@@ -1,14 +1,14 @@
-import { createBatchingProcessor } from '../';
-import { BatchingProcessor } from '../BatchingProcessor';
+import { createBatchRunner } from '../';
+import { BatchRunner } from '../BatchRunner';
 import { Job } from '../Job';
 import { createTimedFailedJob, createTimedJob, wait } from '../__tests__/helpers';
 
 describe('e2e tests', () => {
   it('should complete provided jobs and return processed jobs', async () => {
-    const processor = createBatchingProcessor({
+    const processor = createBatchRunner({
       batchSize: 2,
       concurrency: 2,
-    }).data as BatchingProcessor;
+    }).data as BatchRunner;
 
     for (let i = 1; i <= 20; i++) {
       if (i % 3 === 0) {
@@ -34,10 +34,10 @@ describe('e2e tests', () => {
   });
 
   it('should return processed jobs upon stopping', async () => {
-    const processor = createBatchingProcessor({
+    const processor = createBatchRunner({
       batchSize: 2,
       concurrency: 2,
-    }).data as BatchingProcessor;
+    }).data as BatchRunner;
 
     for (let i = 1; i <= 20; i++) {
       if (i % 3 === 0) {

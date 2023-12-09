@@ -22,7 +22,7 @@ TODO
 
 ### Libraries used
 
-- [@supercharge/promise-pool](https://github.com/supercharge/promise-pool) - BatchProcessor library
+- [@supercharge/promise-pool](https://github.com/supercharge/promise-pool) - The 'BatchProcessor' library
 - [rustic](https://github.com/franeklubi/rustic) - provides useful helper types (`Result` and `Option`)
 - [runtypes](https://github.com/pelotom/runtypes) - runtime type-checking and validation
 
@@ -51,13 +51,16 @@ To be implemented.
 
 ## Developing locally
 
-**Unit tests:**
+**Tests:**
 
 ```bash
 # run unit tests
-yarn test
+yarn test:unit
 
-# run unit tests with coverage report
+# run e2e tests
+yarn test:e2e
+
+# run unit tests and e2e tests
 yarn test:ci
 ```
 

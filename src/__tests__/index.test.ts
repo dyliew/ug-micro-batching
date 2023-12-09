@@ -1,9 +1,9 @@
-import { createBatchingProcessor, createJob } from '..';
+import { createBatchRunner, createJob } from '..';
 
 describe('index', () => {
-  it('should export createBatchingProcessor', () => {
-    expect(createBatchingProcessor).toBeDefined();
-    expect(typeof createBatchingProcessor === 'function').toBe(true);
+  it('should export createBatchRunner', () => {
+    expect(createBatchRunner).toBeDefined();
+    expect(typeof createBatchRunner === 'function').toBe(true);
   });
 
   it('should export createJob', () => {
