@@ -14,11 +14,17 @@ Your task is to implement a micro-batching library, with the following requireme
 - it should provide a way to configure the batching behaviour i.e. size and frequency
 - it should expose a shutdown method which returns after all previously accepted Jobs are processed
 
-## Technical design and decisions
-
-### Assumptions
+## Usage
 
 TODO
+
+## Technical design and decisions
+
+### Libraries used
+
+- [@supercharge/promise-pool](https://github.com/supercharge/promise-pool) - BatchProcessor library
+- [rustic](https://github.com/franeklubi/rustic) - provides useful helper types (`Result` and `Option`)
+- [runtypes](https://github.com/pelotom/runtypes) - runtime type-checking and validation
 
 ### Code structure
 
@@ -83,5 +89,8 @@ yarn build
   - use release tools like [semantic-release](https://github.com/semantic-release/semantic-release) or [release-it](https://github.com/release-it/release-it)
   - release on `main` branch updated using [Github Action For semantic Release](https://github.com/marketplace/actions/action-for-semantic-release)
 - support alternative `BatchProcessor` provided by user
+- re-evaluate `@supercharge/promise-pool` to support more batching features
+  - evaluate [p-queue](https://github.com/sindresorhus/p-queue) which is arguably a more flexible batching processor
+  - add support for retries, timeout, pause and resume
 - add e2e tests
   - run tests using docker compose

@@ -10,9 +10,9 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "moduleResolution": "Node",
     "types": ["node", "jest"],
-    "typeRoots": ["./@types", "./node_modules/@types"]
+    "typeRoots": ["@types", "node_modules/@types"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]
