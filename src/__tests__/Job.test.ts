@@ -11,14 +11,14 @@ describe('Job', () => {
 
   describe('constructor', () => {
     it('should create a new Job instance with the provided options', () => {
-      const job = Job.createJob({
+      const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
       }).data as Job<unknown>;
       expect(job).toBeInstanceOf(Job);
     });
     it('should create a new Job instance without id', () => {
-      const job = Job.createJob({
+      const job = Job.create<string>({
         jobFn: jobfnMock,
       }).data as Job<unknown>;
       expect(job).toBeInstanceOf(Job);
@@ -28,7 +28,7 @@ describe('Job', () => {
 
   describe('when job is idle', () => {
     it('should return the current status of the Job', () => {
-      const job = Job.createJob({
+      const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
       }).data as Job<unknown>;
@@ -39,7 +39,7 @@ describe('Job', () => {
 
   describe('when job is running', () => {
     it('should run the async function and update the status and result accordingly', async () => {
-      const job = Job.createJob({
+      const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
       }).data as Job<unknown>;
@@ -55,7 +55,7 @@ describe('Job', () => {
     it('should return the result of the Job on success', async () => {
       jobfnMock.mockResolvedValue('job executed successfully');
 
-      const job = Job.createJob({
+      const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
       }).data as Job<unknown>;
@@ -73,7 +73,7 @@ describe('Job', () => {
     it('should return the result of the Job on error', async () => {
       jobfnMock.mockRejectedValue(new Error('job executed with error'));
 
-      const job = Job.createJob({
+      const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
       }).data as Job<unknown>;
@@ -90,10 +90,10 @@ describe('Job', () => {
   });
 });
 
-describe('Job.createJob', () => {
+describe('create Job', () => {
   it('should create a new Job instance with the provided options', () => {
     const jobfnMock = jest.fn();
-    const jobResult = Job.createJob({
+    const jobResult = Job.create<string>({
       id: 'test-id',
       jobFn: jobfnMock,
     });
@@ -102,7 +102,7 @@ describe('Job.createJob', () => {
   });
 
   it('should return error on invalid option values', () => {
-    const jobResult = Job.createJob({
+    const jobResult = Job.create<string>({
       id: 'test-id',
       jobFn: undefined as never,
     });

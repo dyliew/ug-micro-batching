@@ -5,12 +5,16 @@ import { Job } from './Job';
 import { BatchRunnerStatus, CreateBatchRunnerOption, FailureJobResult, SuccessJobResult } from './types';
 import { CreateBatchProessorOptionValidator } from './validators';
 
-export class BatchRunner {
+/**
+ * A class that represents a BatchRunner
+ * It uses @supercharge/promise-pool as the BatchProcessor to run jobs in batches
+ */
+export class BatchRunner<T> {
   private batchSize: number;
   private concurrency: number;
   private status: BatchRunnerStatus = 'idle';
-  private jobQueue: Job<unknown>[] = [];
-  private successJobs: SuccessJobResult<unknown>[] = [];
+  private jobQueue: Job<T>[] = [];
+  private successJobs: SuccessJobResult<T>[] = [];
   private failedJobs: FailureJobResult[] = [];
 
   private constructor(option?: CreateBatchRunnerOption) {
@@ -18,7 +22,10 @@ export class BatchRunner {
     this.concurrency = option?.concurrency ?? 1;
   }
 
-  getJobStatus() {
+  /**
+   * @returns the current status of the BatchRunner which also contains processed and failed jobs
+   */
+  getBatchRunnerStatus() {
     return {
       status: this.status,
       processedJobs: this.successJobs,
@@ -26,6 +33,11 @@ export class BatchRunner {
     };
   }
 
+  /**
+   * Updates the batchSize of the BatchRunner
+   * @param batchSize
+   * @returns an error if status is not 'idle' or batchSize input is invalid
+   */
   updateBatchSize(batchSize: number) {
     try {
       if (this.status !== 'idle') {
@@ -39,6 +51,11 @@ export class BatchRunner {
       return Err(error);
     }
   }
+  /**
+   * Updates the concurrency of the BatchRunner
+   * @param concurrency
+   * @returns an error if status is not 'idle' or concurrency input is invalid
+   */
   updateConcurrency(concurrency: number) {
     try {
       if (this.status !== 'idle') {
@@ -53,17 +70,27 @@ export class BatchRunner {
     }
   }
 
-  addJob(job: Job<unknown>): Result<unknown, Error> {
+  /**
+   * Append a job to the job queue
+   * @param job
+   * @returns an error if status is not 'idle'
+   */
+  addJob(job: Job<T>): Result<unknown, Error> {
     try {
       if (this.status !== 'idle') {
         throw new Error(`Cannot add job when processor is not in 'idle' status`);
       }
       this.jobQueue.push(job);
-      return Ok(undefined);
+      return Ok(job.getJobResult());
     } catch (error) {
       return Err(error as Error);
     }
   }
+  /**
+   * Remove all jobs from the job queue
+   * @param jobs
+   * @returns an error if status is not 'idle'
+   */
   clearJobs() {
     try {
       if (this.status !== 'idle') {
@@ -75,10 +102,19 @@ export class BatchRunner {
       return Err(error as Error);
     }
   }
+  /**
+   * @returns the number of jobs in the job queue
+   */
   getJobsCount() {
     return this.jobQueue.length;
   }
 
+  /**
+   * Updates BatchRunner status to 'running' and starts running the jobs in the job queue.
+   * Jobs are run in batches of batchSize.
+   * Batches are run concurrently with concurrency value provided.
+   * @returns an error if status is not 'idle'
+   */
   start() {
     try {
       if (this.status !== 'idle') {
@@ -126,30 +162,45 @@ export class BatchRunner {
       });
   }
 
+  /**
+   * NOT IMPLEMENTED YET
+   */
   pause() {
     return Err(new Error(`Operation 'pause' is not supported yet`));
   }
+  /**
+   * NOT IMPLEMENTED YET
+   */
   resume() {
     return Err(new Error(`Operation 'resume' is not supported yet`));
   }
 
+  /**
+   * Updates the status of the BatchRunner to 'stopped'.
+   * Jobs that are not yet run will not be run.
+   * @returns the current status of the BatchRunner
+   */
   stop() {
     this.status = 'stopped';
-    return this.getJobStatus();
+    return this.getBatchRunnerStatus();
   }
   /**
    * Alias of stop().
+   * @returns the current status of the BatchRunner
    */
   shutdown() {
     return this.stop();
   }
 
-  static createBatchRunner(option?: CreateBatchRunnerOption) {
+  /**
+   * @returns an instance of BatchRunner if the option is valid, otherwise returns an error
+   */
+  static create<T>(option?: CreateBatchRunnerOption) {
     try {
       if (option) {
         CreateBatchProessorOptionValidator.check(option);
       }
-      return Ok(new BatchRunner(option));
+      return Ok(new BatchRunner<T>(option));
     } catch (error) {
       return Err(error as Error);
     }
