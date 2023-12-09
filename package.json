@@ -41,11 +41,11 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@supercharge/promise-pool": "3.1.0",
-    "runtypes": "6.7.0",
-    "uuid": "9.0.1"
+    "@supercharge/promise-pool": "^3.1.0",
+    "runtypes": "^6.7.0",
+    "uuid": "^9.0.1"
   },
   "peerDependencies": {
-    "rustic": "1.2.2"
+    "rustic": "^1.2.2"
   }
 }
