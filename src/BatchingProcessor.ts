@@ -96,6 +96,7 @@ export class BatchingProcessor {
     const jobQueue = [...this.jobQueue];
     const queue = [];
 
+    // split jobs into batches of batchSize
     while (jobQueue.length > 0) {
       const jobs = jobQueue.splice(0, this.batchSize);
       queue.push(jobs);
@@ -144,13 +145,13 @@ export class BatchingProcessor {
   }
 }
 
-export const createBatchingProcessor = (option?: CreateBatchProessorOption) => {
+export const createBatchingProcessor = (option?: CreateBatchProessorOption): Result<BatchingProcessor, Error> => {
   try {
     if (option) {
       CreateBatchProessorOptionValidator.check(option);
     }
     return Ok(new BatchingProcessor(option));
   } catch (error) {
-    return Err(error);
+    return Err(error as Error);
   }
 };

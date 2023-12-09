@@ -1,4 +1,4 @@
-import { createBatchingProcessor, createJob } from './';
+import { createBatchingProcessor, createJob } from '..';
 
 describe('index', () => {
   it('should export createBatchingProcessor', () => {

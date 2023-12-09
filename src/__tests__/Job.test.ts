@@ -1,6 +1,6 @@
 import { validate } from 'uuid';
 import { isOk } from 'rustic';
-import { Job, createJob } from './Job';
+import { Job, createJob } from '../Job';
 
 describe('Job', () => {
   const jobfnMock = jest.fn();

@@ -46,6 +46,7 @@ export class Job<T> {
     if (this.status === 'idle' || this.status === 'running') {
       return { id: this.id, status: this.status };
     }
+    // TOOD: this condition will never be met, refactor the code for better type safety
     return {
       id: this.id,
       status: 'failure',

@@ -1,4 +1,4 @@
-import { CreateBatchProessorOptionValidator, CreateJobOptionValidator } from './validators';
+import { CreateBatchProessorOptionValidator, CreateJobOptionValidator } from '../validators';
 
 describe('CreateBatchProessorOptionValidator', () => {
   it('should validate valid batch processor options', () => {

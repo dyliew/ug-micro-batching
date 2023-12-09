@@ -10,11 +10,12 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "test:ci": "jest --coverage --verbose",
+    "test:e2e": "jest --testTimeout=10000 --testMatch='**/*.e2e.ts'",
+    "test:unit": "yarn test --coverage --verbose",
+    "test:ci": "yarn test:unit && yarn test:e2e",
     "format": "prettier --write . && eslint --fix .",
     "lint": "prettier --check . && eslint .",
     "tsc": "tsc --noEmit",
-    "prebuild": "rm -rf dist && mkdir dist",
     "build": "parcel build",
     "ci": "yarn tsc && yarn lint && yarn test:ci && yarn build"
   },

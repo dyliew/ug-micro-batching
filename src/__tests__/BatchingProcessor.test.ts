@@ -1,20 +1,8 @@
 import { isOk } from 'rustic';
-import { BatchingProcessor, createBatchingProcessor } from './BatchingProcessor';
-import { createJob } from './Job';
-import { Job } from './Job';
-
-const createTimedJob = (time: number, id?: string) => {
-  return createJob({
-    id,
-    jobFn: () => new Promise((resolve) => setTimeout(() => resolve(id), time)),
-  });
-};
-const createTimedFailedJob = (time: number, id?: string) => {
-  return createJob({
-    id,
-    jobFn: () => new Promise((_resolve, reject) => setTimeout(() => reject(new Error(id)), time)),
-  });
-};
+import { BatchingProcessor, createBatchingProcessor } from '../BatchingProcessor';
+import { createJob } from '../Job';
+import { Job } from '../Job';
+import { createTimedFailedJob, createTimedJob } from './helpers';
 
 describe('BatchingProcessor', () => {
   beforeEach(() => {
