@@ -1,27 +1,29 @@
 import { PromisePool } from '@supercharge/promise-pool';
 import { Ok, Err, Result } from 'rustic';
 
-import { JobType } from './Job';
+import { Job } from './Job';
 import { BatchingProcessorStatus, CreateBatchProessorOption, FailureJobResult, SuccessJobResult } from './types';
 import { CreateBatchProessorOptionValidator } from './validators';
 
-class BatchingProcessor {
+export class BatchingProcessor {
   private batchSize: number;
   private concurrency: number;
   private status: BatchingProcessorStatus = 'idle';
-  private jobQueue: JobType<unknown>[] = [];
+  private jobQueue: Job<unknown>[] = [];
   private successJobs: SuccessJobResult<unknown>[] = [];
   private failedJobs: FailureJobResult[] = [];
 
-  constructor(option: CreateBatchProessorOption) {
-    const validatedOption = CreateBatchProessorOptionValidator.check(option);
-
-    this.batchSize = validatedOption.batchSize ?? 1;
-    this.concurrency = validatedOption.concurrency ?? 1;
+  constructor(option?: CreateBatchProessorOption) {
+    this.batchSize = option?.batchSize ?? 1;
+    this.concurrency = option?.concurrency ?? 1;
   }
 
-  getStatus() {
-    return this.status;
+  getJobStatus() {
+    return {
+      status: this.status,
+      processedJobs: this.successJobs,
+      failedJobs: this.failedJobs,
+    };
   }
 
   updateBatchSize(batchSize: number) {
@@ -30,7 +32,7 @@ class BatchingProcessor {
         throw new Error(`Cannot update 'batchSize' when processor is not in 'idle' status`);
       }
 
-      CreateBatchProessorOptionValidator.asPartial().check({ batchSize });
+      CreateBatchProessorOptionValidator.pick('batchSize').check({ batchSize });
       this.batchSize = batchSize;
       return Ok(undefined);
     } catch (error) {
@@ -51,10 +53,7 @@ class BatchingProcessor {
     }
   }
 
-  addJobs(...jobs: JobType<unknown>[]): Result<unknown, Error>[] {
-    return jobs.map((job) => this.addJob(job));
-  }
-  addJob(job: JobType<unknown>): Result<unknown, Error> {
+  addJob(job: Job<unknown>): Result<unknown, Error> {
     try {
       if (this.status !== 'idle') {
         throw new Error(`Cannot add job when processor is not in 'idle' status`);
@@ -66,7 +65,15 @@ class BatchingProcessor {
     }
   }
   clearJobs() {
-    this.jobQueue = [];
+    try {
+      if (this.status !== 'idle') {
+        throw new Error(`Cannot clear job queue when processor is not in 'idle' status`);
+      }
+      this.jobQueue = [];
+      return Ok(undefined);
+    } catch (error) {
+      return Err(error as Error);
+    }
   }
   getJobsCount() {
     return this.jobQueue.length;
@@ -103,6 +110,10 @@ class BatchingProcessor {
           } else if (item.status === 'failure') {
             this.failedJobs.push(item);
           }
+
+          if (this.successJobs.length + this.failedJobs.length === this.jobQueue.length) {
+            this.status = 'stopped';
+          }
         }
       })
       .process(async (jobs, _index, pool) => {
@@ -115,20 +126,15 @@ class BatchingProcessor {
   }
 
   pause() {
-    throw new Error(`Operation 'pause' is not supported yet`);
+    return Err(new Error(`Operation 'pause' is not supported yet`));
   }
   resume() {
-    throw new Error(`Operation 'resume' is not supported yet`);
+    return Err(new Error(`Operation 'resume' is not supported yet`));
   }
 
   stop() {
     this.status = 'stopped';
-
-    return {
-      status: this.status,
-      processedJobs: this.successJobs,
-      failedJobs: this.failedJobs,
-    };
+    return this.getJobStatus();
   }
   /**
    * Alias of stop().
@@ -138,9 +144,11 @@ class BatchingProcessor {
   }
 }
 
-export const createBatchingProcessor = (option: CreateBatchProessorOption) => {
+export const createBatchingProcessor = (option?: CreateBatchProessorOption) => {
   try {
-    CreateBatchProessorOptionValidator.check(option);
+    if (option) {
+      CreateBatchProessorOptionValidator.check(option);
+    }
     return Ok(new BatchingProcessor(option));
   } catch (error) {
     return Err(error);

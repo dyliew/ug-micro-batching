@@ -1,10 +1,10 @@
 import { Static } from 'runtypes';
 
-import { CreateJobOptionBaseValidator, CreateBatchProessorOptionValidator } from './validators';
+import { CreateJobOptionValidator, CreateBatchProessorOptionValidator } from './validators';
 
 export type CreateBatchProessorOption = Static<typeof CreateBatchProessorOptionValidator>;
 
-export type JobStatus = 'idle' | 'running' | 'success' | 'failure' | 'cancelled';
+export type JobStatus = 'idle' | 'running' | 'success' | 'failure';
 
 export interface SuccessJobResult<T> {
   id: string;
@@ -22,8 +22,6 @@ export interface OtherJobResult {
 }
 export type JobResult<T> = SuccessJobResult<T> | OtherJobResult | FailureJobResult;
 
-export type CreateJobOption = Static<typeof CreateJobOptionBaseValidator> & {
-  jobFn: <T>() => Promise<T>;
-};
+export type CreateJobOption = Static<typeof CreateJobOptionValidator>;
 
 export type BatchingProcessorStatus = 'idle' | 'running' | 'stopped';

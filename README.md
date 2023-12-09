@@ -92,5 +92,7 @@ yarn build
 - re-evaluate `@supercharge/promise-pool` to support more batching features
   - evaluate [p-queue](https://github.com/sindresorhus/p-queue) which is arguably a more flexible batching processor
   - add support for retries, timeout, pause and resume
-- add e2e tests
-  - run tests using docker compose
+- improve unit tests by using property based testing with [fast-check](https://github.com/dubzzz/fast-check)
+- consider usage of [fp-ts](https://github.com/gcanti/fp-ts) and [io-ts](https://github.com/gcanti/io-ts)
+  - pros: many benefits we get from writing functional programming code
+  - cons: opinionated implementation details which might not suit many users due to different programming paradigm

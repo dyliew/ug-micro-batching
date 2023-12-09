@@ -2,9 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { Err, Ok, Result, isOk } from 'rustic';
 
 import { CreateJobOption, JobResult, JobStatus } from './types';
-import { CreateJobOptionBaseValidator } from './validators';
+import { CreateJobOptionValidator } from './validators';
 
-class Job<T> {
+export class Job<T> {
   private id: string;
   private asyncFn: () => Promise<T>;
   private status: JobStatus = 'idle';
@@ -37,14 +37,14 @@ class Job<T> {
   }
 
   getJobResult(): JobResult<T> {
-    if (this.status === 'idle' || this.status === 'running' || this.status === 'cancelled') {
-      return { id: this.id, status: this.status };
-    }
     if (this.status === 'success' && this.result && isOk(this.result)) {
       return { id: this.id, status: this.status, result: this.result.data };
     }
     if (this.status === 'failure' && this.result && !isOk(this.result)) {
       return { id: this.id, status: this.status, error: this.result.data };
+    }
+    if (this.status === 'idle' || this.status === 'running') {
+      return { id: this.id, status: this.status };
     }
     return {
       id: this.id,
@@ -54,11 +54,9 @@ class Job<T> {
   }
 }
 
-export type JobType<T> = Job<T>;
-
 export const createJob = (option: CreateJobOption) => {
   try {
-    CreateJobOptionBaseValidator.check(option);
+    CreateJobOptionValidator.check(option);
     return Ok(new Job(option));
   } catch (error) {
     return Err(error);

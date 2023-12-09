@@ -1,0 +1,9 @@
+# Ignore node_modules:
+node_modules
+
+# Ignore parcel cache:
+.cache
+.parcel-cache
+
+# Ignore artifacts:
+dist
