@@ -1,11 +1,9 @@
-import { createBatchRunner } from '../';
-import { BatchRunner } from '../BatchRunner';
-import { Job } from '../Job';
+import { BatchRunner, Job } from '../';
 import { createTimedFailedJob, createTimedJob, wait } from '../__tests__/helpers';
 
 describe('e2e tests', () => {
   it('should complete provided jobs and return processed jobs', async () => {
-    const processor = createBatchRunner({
+    const processor = BatchRunner.createBatchRunner({
       batchSize: 2,
       concurrency: 2,
     }).data as BatchRunner;
@@ -34,7 +32,7 @@ describe('e2e tests', () => {
   });
 
   it('should return processed jobs upon stopping', async () => {
-    const processor = createBatchRunner({
+    const processor = BatchRunner.createBatchRunner({
       batchSize: 2,
       concurrency: 2,
     }).data as BatchRunner;

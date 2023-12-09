@@ -1,6 +1,5 @@
 import { isOk } from 'rustic';
-import { BatchRunner, createBatchRunner } from '../BatchRunner';
-import { createJob } from '../Job';
+import { BatchRunner } from '../BatchRunner';
 import { Job } from '../Job';
 import { createTimedFailedJob, createTimedJob } from './helpers';
 
@@ -15,22 +14,22 @@ describe('BatchRunner', () => {
 
   describe('constructor', () => {
     it('should create a new BatchRunner with the provided options', () => {
-      const runner = new BatchRunner({
+      const runner = BatchRunner.createBatchRunner({
         batchSize: 10,
         concurrency: 2,
-      });
+      }).data as BatchRunner;
       expect(runner).toBeInstanceOf(BatchRunner);
     });
 
     it('should create a new BatchRunner instance without options', () => {
-      const processor = new BatchRunner();
+      const processor = BatchRunner.createBatchRunner().data as BatchRunner;
       expect(processor).toBeInstanceOf(BatchRunner);
     });
   });
 
   describe('when batchRunner is idle', () => {
     it('should return the current status of the batchRunner', () => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       expect(runner.getJobStatus()).toEqual({
         status: 'idle',
         processedJobs: [],
@@ -39,38 +38,38 @@ describe('BatchRunner', () => {
     });
 
     it('should update the batch size successfully', () => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const result = runner.updateBatchSize(10);
       expect(isOk(result)).toBe(true);
     });
     it.each([0, -10])('should return error on invalid batch size: %s', (batchSize) => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const result = runner.updateBatchSize(batchSize);
       expect(isOk(result)).toBe(false);
     });
 
     it('should update the concurrency successfully', () => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const result = runner.updateConcurrency(10);
       expect(isOk(result)).toBe(true);
     });
     it.each([0, -10])('should return error on invalid concurrency: %s', (batchSize) => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const result = runner.updateConcurrency(batchSize);
       expect(isOk(result)).toBe(false);
     });
 
     it('should add job to the job queue successfully', () => {
-      const runner = new BatchRunner();
-      const job = createJob({ jobFn: jest.fn() });
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
+      const job = Job.createJob({ jobFn: jest.fn() });
       const result = runner.addJob(job.data as Job<unknown>);
       expect(isOk(result)).toBe(true);
       expect(runner.getJobsCount()).toBe(1);
     });
 
     it('should clear the job queue successfully', () => {
-      const runner = new BatchRunner();
-      const job = createJob({ jobFn: jest.fn() });
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
+      const job = Job.createJob({ jobFn: jest.fn() });
 
       runner.addJob(job.data as Job<unknown>);
       expect(runner.getJobsCount()).toBe(1);
@@ -83,9 +82,9 @@ describe('BatchRunner', () => {
 
   describe('when batchRunner is running', () => {
     it('should return the current status of the batchRunner', () => {
-      const runner = new BatchRunner({ batchSize: 2, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 2, concurrency: 2 }).data as BatchRunner;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
+        runner.addJob(Job.createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
       }
       runner.start();
 
@@ -97,9 +96,9 @@ describe('BatchRunner', () => {
     });
 
     it('should return error on batch size update', () => {
-      const runner = new BatchRunner({ batchSize: 2, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 2, concurrency: 2 }).data as BatchRunner;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
+        runner.addJob(Job.createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
       }
       runner.start();
 
@@ -109,9 +108,9 @@ describe('BatchRunner', () => {
       expect(result.data).toEqual(new Error(`Cannot update 'batchSize' when processor is not in 'idle' status`));
     });
     it('should return error on concurrency update', () => {
-      const processor = new BatchRunner({ batchSize: 2, concurrency: 2 });
+      const processor = BatchRunner.createBatchRunner({ batchSize: 2, concurrency: 2 }).data as BatchRunner;
       for (let i = 0; i < 10; i++) {
-        processor.addJob(createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
+        processor.addJob(Job.createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
       }
       processor.start();
 
@@ -121,21 +120,21 @@ describe('BatchRunner', () => {
       expect(result.data).toEqual(new Error(`Cannot update 'concurrency' when processor is not in 'idle' status`));
     });
     it('should return error on adding new job', () => {
-      const runner = new BatchRunner({ batchSize: 2, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 2, concurrency: 2 }).data as BatchRunner;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
+        runner.addJob(Job.createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
       }
       runner.start();
 
-      const result = runner.addJob(createJob({ jobFn: jest.fn() }).data as Job<unknown>);
+      const result = runner.addJob(Job.createJob({ jobFn: jest.fn() }).data as Job<unknown>);
 
       expect(isOk(result)).toEqual(false);
       expect(result.data).toEqual(new Error(`Cannot add job when processor is not in 'idle' status`));
     });
     it('should return error on clear job queue', () => {
-      const runner = new BatchRunner({ batchSize: 2, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 2, concurrency: 2 }).data as BatchRunner;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
+        runner.addJob(Job.createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
       }
       runner.start();
 
@@ -145,9 +144,9 @@ describe('BatchRunner', () => {
       expect(result.data).toEqual(new Error(`Cannot clear job queue when processor is not in 'idle' status`));
     });
     it('should return error on start called again', () => {
-      const runner = new BatchRunner({ batchSize: 2, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 2, concurrency: 2 }).data as BatchRunner;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
+        runner.addJob(Job.createJob({ id: String(i), jobFn: jest.fn() }).data as Job<unknown>);
       }
       runner.start();
 
@@ -160,7 +159,7 @@ describe('BatchRunner', () => {
 
   describe('when batchRunner is stopped', () => {
     it('should be able to stop running processor', async () => {
-      const runner = new BatchRunner({ batchSize: 1, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 1, concurrency: 2 }).data as BatchRunner;
       for (let i = 1; i <= 10; i++) {
         if (i % 3 === 0) {
           // every 3rd job will fail
@@ -199,7 +198,7 @@ describe('BatchRunner', () => {
     });
 
     it('should complete all jobs and return job status', async () => {
-      const runner = new BatchRunner({ batchSize: 1, concurrency: 2 });
+      const runner = BatchRunner.createBatchRunner({ batchSize: 1, concurrency: 2 }).data as BatchRunner;
       for (let i = 1; i <= 10; i++) {
         if (i % 3 === 0) {
           // every 3rd job will fail
@@ -233,13 +232,13 @@ describe('BatchRunner', () => {
 
   describe('when unsupported operations are called', () => {
     it("should return error when 'pause' is called", () => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const result = runner.pause();
       expect(isOk(result)).toBe(false);
       expect(result.data).toEqual(new Error(`Operation 'pause' is not supported yet`));
     });
     it("should return error when 'resume' is called", () => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const result = runner.resume();
       expect(isOk(result)).toBe(false);
       expect(result.data).toEqual(new Error(`Operation 'resume' is not supported yet`));
@@ -248,7 +247,7 @@ describe('BatchRunner', () => {
 
   describe('when alias functions are called', () => {
     it("should call 'stop' when 'shutdown' is called", () => {
-      const runner = new BatchRunner();
+      const runner = BatchRunner.createBatchRunner().data as BatchRunner;
       const stopMock = jest.spyOn(runner, 'stop');
       runner.shutdown();
       expect(stopMock).toHaveBeenCalledTimes(1);
@@ -258,7 +257,7 @@ describe('BatchRunner', () => {
 
 describe('createBatchRunner', () => {
   it('should create a new BatchRunner instance with the provided options', () => {
-    const result = createBatchRunner({
+    const result = BatchRunner.createBatchRunner({
       batchSize: 10,
       concurrency: 2,
     });
@@ -267,13 +266,13 @@ describe('createBatchRunner', () => {
   });
 
   it('should create a new BatchRunner instance without options', () => {
-    const result = createBatchRunner();
+    const result = BatchRunner.createBatchRunner();
     expect(isOk(result)).toEqual(true);
     expect(result.data).toBeInstanceOf(BatchRunner);
   });
 
   it('should return error on invalid option values', () => {
-    const result = createBatchRunner({
+    const result = BatchRunner.createBatchRunner({
       batchSize: -10,
       concurrency: -2,
     });

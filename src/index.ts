@@ -1,2 +1,2 @@
-export { createBatchRunner } from './BatchRunner';
-export { createJob } from './Job';
+export { BatchRunner } from './BatchRunner';
+export { Job } from './Job';

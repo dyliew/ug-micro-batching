@@ -13,7 +13,7 @@ export class BatchRunner {
   private successJobs: SuccessJobResult<unknown>[] = [];
   private failedJobs: FailureJobResult[] = [];
 
-  constructor(option?: CreateBatchRunnerOption) {
+  private constructor(option?: CreateBatchRunnerOption) {
     this.batchSize = option?.batchSize ?? 1;
     this.concurrency = option?.concurrency ?? 1;
   }
@@ -143,15 +143,15 @@ export class BatchRunner {
   shutdown() {
     return this.stop();
   }
-}
 
-export const createBatchRunner = (option?: CreateBatchRunnerOption): Result<BatchRunner, Error> => {
-  try {
-    if (option) {
-      CreateBatchProessorOptionValidator.check(option);
+  static createBatchRunner(option?: CreateBatchRunnerOption) {
+    try {
+      if (option) {
+        CreateBatchProessorOptionValidator.check(option);
+      }
+      return Ok(new BatchRunner(option));
+    } catch (error) {
+      return Err(error as Error);
     }
-    return Ok(new BatchRunner(option));
-  } catch (error) {
-    return Err(error as Error);
   }
-};
+}

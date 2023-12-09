@@ -28,7 +28,15 @@ TODO
 
 ### Code structure
 
-TODO
+Files are stored in a relatively flat structure where there are only 2 folders inside `./src` folder.
+These folders are where unit tests and e2e tests files live.
+
+Input validator functions live in `./src/validators.ts`.
+All functions that involve user input in parameters will use their corresponding validators to validate user input (e.g. batch size).
+
+Unit tests are stored in folder(s) with the name `./src/__tests__` which contains unit tests files for their corresponding TS files with exported functions/logic. E2E tests are stored in `./src/__e2e__` and these e2e tests do not run as part of the regular (unit) tests. E2E tests do not contain any mocks for internal and system components like timer.
+
+As the complexity of this library grows (e.g. more features, input, output, .etc), functions will need to be refactored into their logical files and folders (by type or by functionality) in order to keep the codebase maintainable.
 
 ### Production build
 
@@ -96,6 +104,7 @@ yarn build
   - evaluate [p-queue](https://github.com/sindresorhus/p-queue) which is arguably a more flexible batching processor
   - add support for retries, timeout, pause and resume
 - [ ] improve unit tests by using property based testing with [fast-check](https://github.com/dubzzz/fast-check)
+- [ ] improve unit tests coverage to 100%
 - [x] add basic e2e tests
 - [ ] consider usage of [fp-ts](https://github.com/gcanti/fp-ts) and [io-ts](https://github.com/gcanti/io-ts)
   - pros: many benefits we get from writing functional programming code
