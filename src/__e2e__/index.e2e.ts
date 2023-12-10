@@ -6,7 +6,7 @@ describe('e2e tests', () => {
     const runner = BatchRunner.create<string>({
       batchSize: 2,
       concurrency: 2,
-    }).data as BatchRunner<string>;
+    });
 
     for (let i = 1; i <= 20; i++) {
       if (i % 3 === 0) {
@@ -36,7 +36,7 @@ describe('e2e tests', () => {
     const runner = BatchRunner.create<string>({
       batchSize: 2,
       concurrency: 2,
-    }).data as BatchRunner<string>;
+    });
 
     for (let i = 1; i <= 20; i++) {
       if (i % 3 === 0) {
@@ -70,7 +70,7 @@ describe('e2e tests', () => {
     const runner = BatchRunner.create<string>({
       batchSize: 2,
       concurrency: 2,
-    }).data as BatchRunner<string>;
+    });
 
     expect(runner.getJobsCount()).toEqual(0);
 

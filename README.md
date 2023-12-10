@@ -33,27 +33,35 @@ import { isOk } from 'rustic';
 import { BatchRunner } from 'ug-micro-batching';
 
 // with default batch size of 1 and concurrency of 1
-const batchRunnerResult = BatchRunner.create<string>();
+const batchRunner = BatchRunner.create<string>();
 // with provided batch size and concurrency values
-const batchRunnerResult = BatchRunner.create<string>({
-  batchSize: 2,
-  concurrency: 2,
+const batchRunner = BatchRunner.create<string>({
+  batchSize: 2, // 1 - 1000
+  concurrency: 2, // 1 - 1000
 });
-
-if (isOk(batchRunnerResult)) {
-  const batchRunner: BatchRunner<string> = batchRunnerResult.data;
-}
 ```
 
 Update batch size and concurrency values when batch runner is idle:
 
 ```ts
-// batch size must be between 1-1000 inclusive
+// update is allowed when the status is idle
 const updateBatchSizeResult = batchRunner.updateBatchSize(5);
 console.log(isOk(updateBatchSizeResult)); // true
 
+// update is allowed when the status is idle
 const updateConcurrencyResult = batchRunner.updateConcurrency(5);
 console.log(isOk(updateConcurrencyResult)); // true
+```
+
+Providing invalid values will cause `start()` to return an error Result:
+
+```ts
+batchRunner.updateBatchSize(-100);
+// OR
+batchRunner.updateConcurrency(-100);
+
+const result = batchRunner.start();
+console.log(isOk(result)); // false
 ```
 
 ### Creating Jobs
@@ -75,8 +83,10 @@ const job1 = Job.create<string>({
 batchRunner.add(job1);
 batchRunner.add(job2);
 batchRunner.add(job3);
-
 console.log(batchRunner.getJobsCount()); // 3
+
+batchRunner.clearJobs();
+console.log(batchRunner.getJobsCount()); // 0
 ```
 
 ### Getting BatchRunner status:

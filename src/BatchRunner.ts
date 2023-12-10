@@ -52,7 +52,6 @@ export class BatchRunner<T> {
         throw new Error(`Cannot update 'batchSize' when processor is not in 'idle' status`);
       }
 
-      CreateBatchProessorOptionValidator.pick('batchSize').check({ batchSize });
       this.batchSize = batchSize;
       return Ok(undefined);
     } catch (error) {
@@ -70,7 +69,6 @@ export class BatchRunner<T> {
         throw new Error(`Cannot update 'concurrency' when processor is not in 'idle' status`);
       }
 
-      CreateBatchProessorOptionValidator.asPartial().check({ concurrency });
       this.concurrency = concurrency;
       return Ok(undefined);
     } catch (error) {
@@ -128,6 +126,11 @@ export class BatchRunner<T> {
       if (this.status !== 'idle') {
         throw new Error(`Processor is not in 'idle' status`);
       }
+
+      CreateBatchProessorOptionValidator.check({
+        batchSize: this.batchSize,
+        concurrency: this.concurrency,
+      });
 
       if (this.jobQueue.length === 0) {
         this.status = 'stopped';
@@ -216,16 +219,9 @@ export class BatchRunner<T> {
   }
 
   /**
-   * @returns an instance of BatchRunner if the option is valid, otherwise returns an error
+   * @returns an instance of BatchRunner
    */
   static create<T>(option?: CreateBatchRunnerOption) {
-    try {
-      if (option) {
-        CreateBatchProessorOptionValidator.check(option);
-      }
-      return Ok(new BatchRunner<T>(option));
-    } catch (error) {
-      return Err(error as Error);
-    }
+    return new BatchRunner<T>(option);
   }
 }
