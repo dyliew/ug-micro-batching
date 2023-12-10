@@ -20,8 +20,11 @@ In order to use this library in your code, please also install `rustic`:
 
 ```bash
 yarn add rustic
+# OR
 npm install rustic --save
 ```
+
+### Creating BatchRunner
 
 Create a new batch runner instance:
 
@@ -42,11 +45,139 @@ if (isOk(batchRunnerResult)) {
 }
 ```
 
-Update batch size and concurrency values when job is idle:
+Update batch size and concurrency values when batch runner is idle:
+
+```ts
+// batch size must be between 1-1000 inclusive
+const updateBatchSizeResult = batchRunner.updateBatchSize(5);
+console.log(isOk(updateBatchSizeResult)); // true
+
+const updateConcurrencyResult = batchRunner.updateConcurrency(5);
+console.log(isOk(updateConcurrencyResult)); // true
+```
+
+### Creating Jobs
 
 Create job and append jobs for BatchRunner:
 
-TODO...
+```ts
+const createJob1Result = Job.create<string>({
+  id: 'job-1',
+  jobFn: function () {
+    return new Promise(function (res) {
+      setTimeout(function () {
+        res('response from job-1');
+      }, 1000);
+    });
+  },
+});
+if (isOk(createJob1Result)) {
+  const job1: Job = createJob1Result.data;
+
+  batchRunner.add(job1);
+  batchRunner.add(job2);
+  batchRunner.add(job3);
+
+  console.log(batchRunner.getJobsCount()); // 3
+}
+```
+
+### Getting BatchRunner status:
+
+Get batch runner status:
+
+- returns status in either `idle`, `running` and `stopped` state
+  - `idle` - The starting state of BatchRunner where the user can still update the configurations of the BatchRunner
+  - `running` - Jobs are grouped into batches and running batches of jobs concurrently - BatchRunner configurations cannot be updated anymore
+  - `stopped` - The final state of BatchRunner where either all jobs have been run or runner has been explicitly stopped by the user
+- also includes processedJobs (jobs successfully processed) and failedJobs (jobs failed to process)
+
+```ts
+const batchRunnerState = batchRunner.getBatchRunnerState();
+/**
+ * BatchRunner on 'idle' state
+ * {
+ *   status: 'idle',
+ *   processedJobs: [],
+ *   failedJobs: [],
+ * }
+ *
+ * BatchRunner on 'running' state
+ * {
+ *   status: 'running',
+ *   processedJobs: [
+ *     { id: '1', status: 'success', result: '1' },
+ *     { id: '2', status: 'success', result: '2' },
+ *   ],
+ *   failedJobs: [
+ *     { id: '3', status: 'success', result: '3' },
+ *   ],
+ * }
+ *
+ * BatchRunner on 'stopped' state
+ * {
+ *   status: 'stopped',
+ *   processedJobs: [
+ *     { id: '1', status: 'success', result: '1' },
+ *     { id: '2', status: 'success', result: '2' },
+ *     { id: '4', status: 'success', result: '4' },
+ *     { id: '5', status: 'success', result: '5' },
+ *   ],
+ *   failedJobs: [
+ *     { id: '3', status: 'success', result: '3' },
+ *     { id: '6', status: 'success', result: '6' },
+ *   ],
+ * }
+ */
+```
+
+### Running and stopping BatchRunner
+
+Run batch runner:
+
+```ts
+batchRunner.start();
+const state = batchRunner.getBatchRunnerState();
+/**
+ * {
+ *   status: 'running',
+ *   processedJobs: [...],
+ *   failedJobs: [...],
+ * }
+ */
+```
+
+Stop batch runner:
+
+```ts
+batchRunner.stop();
+const state = batchRunner.getBatchRunnerState();
+/**
+ * {
+ *   status: 'stopped',
+ *   processedJobs: [...],
+ *   failedJobs: [...],
+ * }
+ */
+```
+
+Batch runner on completing all jobs:
+
+```ts
+// onStopped callback will be called when BatchRunner status is transitioned to 'stopped'.
+// BatchRunner status is transitioned to 'stopped' when `batchRunner.stop()` is called or all jobs have been processed.
+batchRunner.onStopped(function (state) {
+  console.log(state);
+/**
+ * {
+ *   status: 'stopped',
+ *   processedJobs: [...],
+ *   failedJobs: [...],
+ * }
+ */
+});
+batchRunner.start();
+```
 
 ## Technical design and decisions
 

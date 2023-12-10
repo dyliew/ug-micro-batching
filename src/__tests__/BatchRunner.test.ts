@@ -31,7 +31,7 @@ describe('BatchRunner', () => {
   describe('when batchRunner is idle', () => {
     it('should return the current status of the batchRunner', () => {
       const runner = BatchRunner.create<string>().data as BatchRunner<string>;
-      expect(runner.getBatchRunnerStatus()).toEqual({
+      expect(runner.getBatchRunnerState()).toEqual({
         status: 'idle',
         processedJobs: [],
         failedJobs: [],
@@ -90,7 +90,7 @@ describe('BatchRunner', () => {
       }
       runner.start();
 
-      expect(runner.getBatchRunnerStatus()).toEqual({
+      expect(runner.getBatchRunnerState()).toEqual({
         status: 'running',
         processedJobs: [],
         failedJobs: [],
@@ -161,6 +161,7 @@ describe('BatchRunner', () => {
 
   describe('when batchRunner is stopped', () => {
     it('should be able to stop running processor', async () => {
+      const onStoppedCallback = jest.fn();
       const runner = BatchRunner.create<string>({ batchSize: 1, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 1; i <= 10; i++) {
         if (i % 3 === 0) {
@@ -170,6 +171,7 @@ describe('BatchRunner', () => {
           runner.addJob(createTimedJob(1000, String(i)).data as Job<string>);
         }
       }
+      runner.onStopped(onStoppedCallback);
       runner.start();
       await jest.advanceTimersByTimeAsync(2100);
 
@@ -184,6 +186,17 @@ describe('BatchRunner', () => {
       ]);
       // since only 2.1s have passed, only 3rd failed job should be processed
       expect(result.failedJobs).toEqual([{ id: '3', status: 'failure', error: new Error('3') }]);
+
+      expect(onStoppedCallback).toHaveBeenCalledTimes(1);
+      expect(onStoppedCallback).toHaveBeenCalledWith({
+        status: 'stopped',
+        processedJobs: [
+          { id: '1', status: 'success', result: '1' },
+          { id: '2', status: 'success', result: '2' },
+          { id: '4', status: 'success', result: '4' },
+        ],
+        failedJobs: [{ id: '3', status: 'failure', error: new Error('3') }],
+      });
 
       // advancing remaining time to complete remaining in-flight jobs
       await jest.advanceTimersByTimeAsync(2100);
@@ -200,6 +213,7 @@ describe('BatchRunner', () => {
     });
 
     it('should complete all jobs and return job status', async () => {
+      const onStoppedCallback = jest.fn();
       const runner = BatchRunner.create<string>({ batchSize: 1, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 1; i <= 10; i++) {
         if (i % 3 === 0) {
@@ -209,10 +223,11 @@ describe('BatchRunner', () => {
           runner.addJob(createTimedJob(1000, String(i)).data as Job<string>);
         }
       }
+      runner.onStopped(onStoppedCallback);
       runner.start();
       await jest.advanceTimersByTimeAsync(5100);
 
-      expect(runner.getBatchRunnerStatus()).toEqual({
+      expect(runner.getBatchRunnerState()).toEqual({
         status: 'stopped',
         processedJobs: [
           { id: '1', status: 'success', result: '1' },
@@ -229,6 +244,42 @@ describe('BatchRunner', () => {
           { id: '9', status: 'failure', error: new Error('9') },
         ],
       });
+
+      expect(onStoppedCallback).toHaveBeenCalledTimes(1);
+      expect(onStoppedCallback).toHaveBeenCalledWith({
+        status: 'stopped',
+        processedJobs: [
+          { id: '1', status: 'success', result: '1' },
+          { id: '2', status: 'success', result: '2' },
+          { id: '4', status: 'success', result: '4' },
+          { id: '5', status: 'success', result: '5' },
+          { id: '7', status: 'success', result: '7' },
+          { id: '8', status: 'success', result: '8' },
+          { id: '10', status: 'success', result: '10' },
+        ],
+        failedJobs: [
+          { id: '3', status: 'failure', error: new Error('3') },
+          { id: '6', status: 'failure', error: new Error('6') },
+          { id: '9', status: 'failure', error: new Error('9') },
+        ],
+      });
+    });
+
+    it('should stop when there are no jobs provided', async () => {
+      const onStoppedCallback = jest.fn();
+
+      const runner = BatchRunner.create<string>({ batchSize: 1, concurrency: 2 }).data as BatchRunner<string>;
+      runner.onStopped(onStoppedCallback);
+
+      runner.start();
+      await jest.advanceTimersByTimeAsync(1);
+
+      expect(runner.getBatchRunnerState()).toEqual({
+        status: 'stopped',
+        processedJobs: [],
+        failedJobs: [],
+      });
+      expect(onStoppedCallback).toHaveBeenCalledTimes(1);
     });
   });
 

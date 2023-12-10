@@ -25,3 +25,9 @@ export type JobResult<T> = SuccessJobResult<T> | OtherJobResult | FailureJobResu
 export type CreateJobOption = Static<typeof CreateJobOptionValidator>;
 
 export type BatchRunnerStatus = 'idle' | 'running' | 'stopped';
+
+export interface BatchRunnerState<T> {
+  status: BatchRunnerStatus;
+  processedJobs: SuccessJobResult<T>[];
+  failedJobs: FailureJobResult[];
+}

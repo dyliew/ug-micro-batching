@@ -2,7 +2,13 @@ import { PromisePool } from '@supercharge/promise-pool';
 import { Ok, Err, Result } from 'rustic';
 
 import { Job } from './Job';
-import { BatchRunnerStatus, CreateBatchRunnerOption, FailureJobResult, SuccessJobResult } from './types';
+import {
+  BatchRunnerState,
+  BatchRunnerStatus,
+  CreateBatchRunnerOption,
+  FailureJobResult,
+  SuccessJobResult,
+} from './types';
 import { CreateBatchProessorOptionValidator } from './validators';
 
 /**
@@ -17,6 +23,8 @@ export class BatchRunner<T> {
   private successJobs: SuccessJobResult<T>[] = [];
   private failedJobs: FailureJobResult[] = [];
 
+  private onStoppedCallback?: (state: BatchRunnerState<T>) => void;
+
   private constructor(option?: CreateBatchRunnerOption) {
     this.batchSize = option?.batchSize ?? 1;
     this.concurrency = option?.concurrency ?? 1;
@@ -25,7 +33,7 @@ export class BatchRunner<T> {
   /**
    * @returns the current status of the BatchRunner which also contains processed and failed jobs
    */
-  getBatchRunnerStatus() {
+  getBatchRunnerState() {
     return {
       status: this.status,
       processedJobs: this.successJobs,
@@ -121,8 +129,14 @@ export class BatchRunner<T> {
         throw new Error(`Processor is not in 'idle' status`);
       }
 
-      this.status = 'running';
-      this.run();
+      if (this.jobQueue.length === 0) {
+        this.status = 'stopped';
+        this.onStoppedCallback?.(this.getBatchRunnerState());
+      } else {
+        this.status = 'running';
+        this.run();
+      }
+
       return Ok({ status: this.status });
     } catch (error) {
       return Err(error as Error);
@@ -150,15 +164,17 @@ export class BatchRunner<T> {
 
           if (this.successJobs.length + this.failedJobs.length === this.jobQueue.length) {
             this.status = 'stopped';
+            this.onStoppedCallback?.(this.getBatchRunnerState());
           }
         }
       })
       .process(async (jobs, _index, pool) => {
         if (this.status === 'stopped') {
           return pool.stop();
+        } else {
+          const jobResults = await Promise.all(jobs.map((job) => job.run()));
+          return jobResults;
         }
-        const jobResults = await Promise.all(jobs.map((job) => job.run()));
-        return jobResults;
       });
   }
 
@@ -181,8 +197,11 @@ export class BatchRunner<T> {
    * @returns the current status of the BatchRunner
    */
   stop() {
-    this.status = 'stopped';
-    return this.getBatchRunnerStatus();
+    if (this.status !== 'stopped') {
+      this.status = 'stopped';
+      this.onStoppedCallback?.(this.getBatchRunnerState());
+    }
+    return this.getBatchRunnerState();
   }
   /**
    * Alias of stop().
@@ -190,6 +209,10 @@ export class BatchRunner<T> {
    */
   shutdown() {
     return this.stop();
+  }
+
+  onStopped(callback: (state: BatchRunnerState<T>) => void) {
+    this.onStoppedCallback = callback;
   }
 
   /**
