@@ -31,13 +31,15 @@ export class Job<T> {
   }
 
   /**
-   * An async function that updates the status of the Job to running and executes the async function
+   * An async function that updates the status of the Job to running and executes the async function.
+   * Also validates the configuration of the Job before running the async function.
    * @returns the result of the async function on success or the error on failure
    */
   async run() {
     this.status = 'running';
 
     try {
+      CreateJobOptionValidator.check({ id: this.id, jobFn: this.asyncFn });
       const result = await this.asyncFn();
       this.result = Ok(result);
       this.status = 'success';
@@ -75,14 +77,9 @@ export class Job<T> {
   }
 
   /**
-   * @returns an instance of Job if the option is valid, otherwise returns an error
+   * @returns an instance of Job
    */
   static create<T>(option: CreateJobOption) {
-    try {
-      CreateJobOptionValidator.check(option);
-      return Ok(new Job<T>(option));
-    } catch (error) {
-      return Err(error);
-    }
+    return new Job<T>(option);
   }
 }

@@ -1,5 +1,4 @@
 import { validate } from 'uuid';
-import { isOk } from 'rustic';
 import { Job } from '../Job';
 
 describe('Job', () => {
@@ -9,29 +8,12 @@ describe('Job', () => {
     jest.resetAllMocks();
   });
 
-  describe('constructor', () => {
-    it('should create a new Job instance with the provided options', () => {
-      const job = Job.create<string>({
-        id: 'test-id',
-        jobFn: jobfnMock,
-      }).data as Job<unknown>;
-      expect(job).toBeInstanceOf(Job);
-    });
-    it('should create a new Job instance without id', () => {
-      const job = Job.create<string>({
-        jobFn: jobfnMock,
-      }).data as Job<unknown>;
-      expect(job).toBeInstanceOf(Job);
-      expect(validate(job.getJobResult().id)).toBe(true);
-    });
-  });
-
   describe('when job is idle', () => {
     it('should return the current status of the Job', () => {
       const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
-      }).data as Job<unknown>;
+      });
       expect(job.getStatus()).toEqual('idle');
       expect(job.getJobResult()).toEqual({ status: 'idle', id: 'test-id' });
     });
@@ -42,12 +24,44 @@ describe('Job', () => {
       const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
-      }).data as Job<unknown>;
+      });
       job.run();
 
       expect(job.getStatus()).toEqual('running');
       expect(job.getJobResult()).toEqual({ status: 'running', id: 'test-id' });
       expect(jobfnMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should result in error on invalid id', async () => {
+      const job = Job.create<string>({
+        id: 123 as never,
+        jobFn: jobfnMock,
+      });
+      await job.run();
+
+      expect(job.getJobResult()).toEqual({
+        status: 'failure',
+        id: 123,
+        error: expect.objectContaining({
+          message: expect.stringContaining('"id": "Expected string, but was number"'),
+        }),
+      });
+    });
+
+    it('should result in error on invalid jobFn', async () => {
+      const job = Job.create<string>({
+        id: 'job-id-1',
+        jobFn: 123 as never,
+      });
+      await job.run();
+
+      expect(job.getJobResult()).toEqual({
+        status: 'failure',
+        id: 'job-id-1',
+        error: expect.objectContaining({
+          message: expect.stringContaining('"jobFn": "Expected function, but was number"'),
+        }),
+      });
     });
   });
 
@@ -58,7 +72,7 @@ describe('Job', () => {
       const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
-      }).data as Job<unknown>;
+      });
       await job.run();
 
       expect(job.getStatus()).toEqual('success');
@@ -76,7 +90,7 @@ describe('Job', () => {
       const job = Job.create<string>({
         id: 'test-id',
         jobFn: jobfnMock,
-      }).data as Job<unknown>;
+      });
       await job.run();
 
       expect(job.getStatus()).toEqual('failure');
@@ -93,24 +107,18 @@ describe('Job', () => {
 describe('create Job', () => {
   it('should create a new Job instance with the provided options', () => {
     const jobfnMock = jest.fn();
-    const jobResult = Job.create<string>({
+    const job = Job.create<string>({
       id: 'test-id',
       jobFn: jobfnMock,
     });
-    expect(isOk(jobResult)).toEqual(true);
-    expect(jobResult.data).toBeInstanceOf(Job);
+    expect(job).toBeInstanceOf(Job);
   });
-
-  it('should return error on invalid option values', () => {
-    const jobResult = Job.create<string>({
-      id: 'test-id',
-      jobFn: undefined as never,
+  it('should create a new Job instance without id', () => {
+    const jobfnMock = jest.fn();
+    const job = Job.create<string>({
+      jobFn: jobfnMock,
     });
-    expect(isOk(jobResult)).toEqual(false);
-    expect(jobResult.data).toEqual(
-      expect.objectContaining({
-        message: expect.stringContaining('"jobFn": "Expected function, but was undefined"'),
-      }),
-    );
+    expect(job).toBeInstanceOf(Job);
+    expect(validate(job.getJobResult().id)).toEqual(true);
   });
 });

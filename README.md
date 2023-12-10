@@ -61,7 +61,7 @@ console.log(isOk(updateConcurrencyResult)); // true
 Create job and append jobs for BatchRunner:
 
 ```ts
-const createJob1Result = Job.create<string>({
+const job1 = Job.create<string>({
   id: 'job-1',
   jobFn: function () {
     return new Promise(function (res) {
@@ -71,15 +71,12 @@ const createJob1Result = Job.create<string>({
     });
   },
 });
-if (isOk(createJob1Result)) {
-  const job1: Job = createJob1Result.data;
 
-  batchRunner.add(job1);
-  batchRunner.add(job2);
-  batchRunner.add(job3);
+batchRunner.add(job1);
+batchRunner.add(job2);
+batchRunner.add(job3);
 
-  console.log(batchRunner.getJobsCount()); // 3
-}
+console.log(batchRunner.getJobsCount()); // 3
 ```
 
 ### Getting BatchRunner status:
@@ -168,13 +165,13 @@ Batch runner on completing all jobs:
 // BatchRunner status is transitioned to 'stopped' when `batchRunner.stop()` is called or all jobs have been processed.
 batchRunner.onStopped(function (state) {
   console.log(state);
-/**
- * {
- *   status: 'stopped',
- *   processedJobs: [...],
- *   failedJobs: [...],
- * }
- */
+  /**
+   * {
+   *   status: 'stopped',
+   *   processedJobs: [...],
+   *   failedJobs: [...],
+   * }
+   */
 });
 batchRunner.start();
 ```

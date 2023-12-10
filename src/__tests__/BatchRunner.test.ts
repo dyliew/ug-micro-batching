@@ -62,8 +62,8 @@ describe('BatchRunner', () => {
 
     it('should add job to the job queue successfully', () => {
       const runner = BatchRunner.create<string>().data as BatchRunner<string>;
-      const job = Job.create({ id: '1', jobFn: jest.fn() });
-      const result = runner.addJob(job.data as Job<string>);
+      const job = Job.create<string>({ id: '1', jobFn: jest.fn() });
+      const result = runner.addJob(job);
       expect(isOk(result)).toBe(true);
       expect(result.data as JobResult<unknown>).toEqual({ id: '1', status: 'idle' });
       expect(runner.getJobsCount()).toBe(1);
@@ -71,9 +71,9 @@ describe('BatchRunner', () => {
 
     it('should clear the job queue successfully', () => {
       const runner = BatchRunner.create<string>().data as BatchRunner<string>;
-      const job = Job.create({ jobFn: jest.fn() });
+      const job = Job.create<string>({ jobFn: jest.fn() });
 
-      runner.addJob(job.data as Job<string>);
+      runner.addJob(job);
       expect(runner.getJobsCount()).toBe(1);
 
       const result = runner.clearJobs();
@@ -86,7 +86,7 @@ describe('BatchRunner', () => {
     it('should return the current status of the batchRunner', () => {
       const runner = BatchRunner.create<string>({ batchSize: 2, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }).data as Job<string>);
+        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }));
       }
       runner.start();
 
@@ -100,7 +100,7 @@ describe('BatchRunner', () => {
     it('should return error on batch size update', () => {
       const runner = BatchRunner.create<string>({ batchSize: 2, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }).data as Job<string>);
+        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }));
       }
       runner.start();
 
@@ -112,7 +112,7 @@ describe('BatchRunner', () => {
     it('should return error on concurrency update', () => {
       const processor = BatchRunner.create<string>({ batchSize: 2, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 0; i < 10; i++) {
-        processor.addJob(Job.create({ id: String(i), jobFn: jest.fn() }).data as Job<string>);
+        processor.addJob(Job.create({ id: String(i), jobFn: jest.fn() }));
       }
       processor.start();
 
@@ -124,11 +124,11 @@ describe('BatchRunner', () => {
     it('should return error on adding new job', () => {
       const runner = BatchRunner.create<string>({ batchSize: 2, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }).data as Job<string>);
+        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }));
       }
       runner.start();
 
-      const result = runner.addJob(Job.create({ jobFn: jest.fn() }).data as Job<string>);
+      const result = runner.addJob(Job.create({ jobFn: jest.fn() }));
 
       expect(isOk(result)).toEqual(false);
       expect(result.data).toEqual(new Error(`Cannot add job when processor is not in 'idle' status`));
@@ -136,7 +136,7 @@ describe('BatchRunner', () => {
     it('should return error on clear job queue', () => {
       const runner = BatchRunner.create<string>({ batchSize: 2, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }).data as Job<string>);
+        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }));
       }
       runner.start();
 
@@ -148,7 +148,7 @@ describe('BatchRunner', () => {
     it('should return error on start called again', () => {
       const runner = BatchRunner.create<string>({ batchSize: 2, concurrency: 2 }).data as BatchRunner<string>;
       for (let i = 0; i < 10; i++) {
-        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }).data as Job<string>);
+        runner.addJob(Job.create({ id: String(i), jobFn: jest.fn() }));
       }
       runner.start();
 
@@ -166,9 +166,9 @@ describe('BatchRunner', () => {
       for (let i = 1; i <= 10; i++) {
         if (i % 3 === 0) {
           // every 3rd job will fail
-          runner.addJob(createTimedFailedJob(1000, String(i)).data as Job<string>);
+          runner.addJob(createTimedFailedJob(1000, String(i)));
         } else {
-          runner.addJob(createTimedJob(1000, String(i)).data as Job<string>);
+          runner.addJob(createTimedJob(1000, String(i)));
         }
       }
       runner.onStopped(onStoppedCallback);
@@ -218,9 +218,9 @@ describe('BatchRunner', () => {
       for (let i = 1; i <= 10; i++) {
         if (i % 3 === 0) {
           // every 3rd job will fail
-          runner.addJob(createTimedFailedJob(1000, String(i)).data as Job<string>);
+          runner.addJob(createTimedFailedJob(1000, String(i)));
         } else {
-          runner.addJob(createTimedJob(1000, String(i)).data as Job<string>);
+          runner.addJob(createTimedJob(1000, String(i)));
         }
       }
       runner.onStopped(onStoppedCallback);

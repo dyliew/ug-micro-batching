@@ -1,4 +1,4 @@
-import { BatchRunner, Job } from '../';
+import { BatchRunner } from '../';
 import { createTimedFailedJob, createTimedJob, wait } from '../__tests__/helpers';
 
 describe('e2e tests', () => {
@@ -11,9 +11,9 @@ describe('e2e tests', () => {
     for (let i = 1; i <= 20; i++) {
       if (i % 3 === 0) {
         // every 3rd job will fail
-        runner.addJob(createTimedFailedJob(500, String(i)).data as Job<string>);
+        runner.addJob(createTimedFailedJob(500, String(i)));
       } else {
-        runner.addJob(createTimedJob(500, String(i)).data as Job<string>);
+        runner.addJob(createTimedJob(500, String(i)));
       }
     }
 
@@ -41,9 +41,9 @@ describe('e2e tests', () => {
     for (let i = 1; i <= 20; i++) {
       if (i % 3 === 0) {
         // every 3rd job will fail
-        runner.addJob(createTimedFailedJob(500, String(i)).data as Job<string>);
+        runner.addJob(createTimedFailedJob(500, String(i)));
       } else {
-        runner.addJob(createTimedJob(500, String(i)).data as Job<string>);
+        runner.addJob(createTimedJob(500, String(i)));
       }
     }
 
