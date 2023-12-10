@@ -89,7 +89,7 @@ batchRunner.clearJobs();
 console.log(batchRunner.getJobsCount()); // 0
 ```
 
-### Getting BatchRunner status:
+### Getting BatchRunner status
 
 Get batch runner status:
 
@@ -224,6 +224,13 @@ CommonJs release build can be found in `./dist/cjs`.
 ESModule release build can be found in `./dist/module`.
 
 Library types can be found in `./dist/index.d.ts`.
+
+### Github Actions
+
+There are 2 workflows setup for library.
+
+- validate: checks linting & formatting, runs tests (unit and e2e) and builds code
+- codeql-analysis: code vulnerability & security scanner using [CodeQL](https://github.com/dyliew/ug-micro-batching/security/code-scanning/tools/CodeQL/status/)
 
 ### Publishing library to NPM
 
