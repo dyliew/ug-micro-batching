@@ -238,6 +238,13 @@ To be implemented.
 
 ## Developing locally
 
+**Installing dependencies:**
+
+```bash
+nvm i # requires node v18.12
+yarn i
+```
+
 **Tests:**
 
 ```bash
